@@ -189,6 +189,15 @@ The broader theme is transparent quantum performance modeling: start from a phys
 
 This repository uses the MIT License, selected from GitHub standard license templates. See the LICENSE file in this repository for the full license text.
 
+## Acknowledgements
+
+This material was developed and/or adapted with support from the National
+Science Foundation through the QCAP-NQVL-Pilot and QCAP-NQVL-Design efforts
+under NSF Award Nos. OSI-2410813 and OSI-2531569.
+Any opinions, findings, conclusions, or recommendations expressed in this
+material are those of the author(s) and do not necessarily reflect the views
+of the National Science Foundation.
+
 ## Author
 
 **Dr. Boris Kiefer**  
