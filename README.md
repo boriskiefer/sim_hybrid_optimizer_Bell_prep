@@ -1,67 +1,348 @@
-# Hybrid Classical-Quantum Optimizer for Bell-State Preparation
+# Hybrid Classical-Quantum Bell-State Optimizers
 
-This repository contains a compact hybrid classical-quantum workflow for preparing a Bell state with a parameterized quantum circuit and a classical optimizer.
+This repository contains two related hybrid classical-quantum simulators for two-qubit Bell-state preparation.
 
-The goal is not to provide a production optimizer. The goal is to demonstrate a transparent, inspectable workflow for quantum state preparation:
+The two notebooks are intentionally kept as separate versions because they represent different levels of physical and engineering complexity:
 
-```text
-target state → parameterized circuit → objective function → classical optimization → final fidelity
-```
+- **V1** is the ideal, transparent baseline: target state -> parameterized circuit -> objective function -> classical optimization -> final-state verification.
+- **V2** extends the same workflow to density-matrix dynamics, hardware errors, finite-shot measurements, state estimation, and classical feedback control.
 
-The example is intentionally small. It is designed as a portfolio artifact showing how a quantum workflow can be scoped, implemented, validated, visualized, and extended toward more realistic hardware-aware simulations.
+Together they show the progression from an ideal hybrid optimization loop to a hardware-aware, finite-resource control problem.
 
-## Motivation
+> Equations in this README are written in plain text rather than LaTeX so the file remains readable in GitHub, Notepad, and other plain-text editors.
 
-Hybrid classical-quantum workflows are central to many near-term quantum algorithms. Even in a minimal state-preparation example, the same workflow pattern appears:
+---
 
-1. define a target quantum state,
-2. construct a parameterized circuit,
-3. evaluate an objective function,
-4. update parameters with a classical optimizer,
-5. verify the final state using quantitative metrics.
-
-This project applies that pattern to Bell-state preparation. The optimizer searches for a circuit parameter that prepares a target entangled two-qubit state with high fidelity.
-
-The notebook emphasizes clarity over complexity. Each step is written to make the modeling assumptions explicit.
-
-## What the Demo Shows
-
-The current version demonstrates:
-
-* Bell-state target definition
-* parameterized two-qubit circuit construction
-* classical optimization of a circuit parameter
-* fidelity-based cost function
-* convergence tracking
-* final-state verification
-* concurrence calculation
-* compact visual comparison of target and optimized state amplitudes
-
-The output includes:
-
-* optimization trace
-* parameter stabilization
-* target-vs-optimized amplitude comparison
-* final fidelity
-* target and final concurrence
-* optimized circuit parameter
-* function evaluations and iteration count
-
-## Repository Structure
+## Repository Contents
 
 ```text
-hybrid-classical-quantum-state-preparation/
-├── README.md
+.
 ├── sim_hybrid_opti_Bellstate_prep.ipynb
+├── sim_hybrid_opti_Bellstate_V2.ipynb
 ├── sim_hybrid_opti_Bellstate_prep_brief.pdf
+├── hybrid_quantum_classical_control_technical_brief.pdf
+├── README.md
 ├── requirements.txt
+└── LICENSE
 ```
 
-Depending on how the repository is organized, the notebook may also appear in a `notebooks/` directory.
+The repository uses the MIT License.
+
+---
+
+## Common Problem
+
+Both simulators address the same basic task:
+
+```text
+target state
+    ->
+parameterized quantum system
+    ->
+quantitative objective
+    ->
+classical optimization / control
+    ->
+verification against the target
+```
+
+The difference is how much of the underlying physics and hardware behavior is represented.
+
+V1 establishes a minimal, inspectable reference implementation. V2 preserves that baseline while adding realistic state representations, noise, finite measurement resources, and closed-loop recovery.
+
+---
+
+## V1 - Ideal Bell-State Preparation
+
+Notebook:
+
+```text
+sim_hybrid_opti_Bellstate_prep.ipynb
+```
+
+V1 implements a compact hybrid classical-quantum workflow for preparing a Bell-like two-qubit state with a parameterized quantum circuit and a classical optimizer.
+
+The goal is not to provide a production optimizer. The goal is to demonstrate a transparent and inspectable workflow in which each modeling assumption and numerical result can be checked directly.
+
+### V1 Workflow
+
+```text
+target state
+    ->
+parameterized circuit
+    ->
+objective function
+    ->
+classical optimizer
+    ->
+final-state verification
+```
+
+### V1 Capabilities
+
+- Bell-state target definition
+- parameterized two-qubit circuit construction
+- classical optimization of a circuit parameter
+- fidelity-based cost function
+- convergence tracking
+- final-state verification
+- concurrence calculation
+- target-vs-optimized amplitude comparison
+- optimized circuit parameter reporting
+- function-evaluation and iteration-count reporting
+
+### V1 Model
+
+The simulator optimizes a parameterized state-preparation circuit against a Bell-state target.
+
+The objective is based on target-state fidelity:
+
+```text
+cost = 1 - fidelity
+```
+
+A successful optimization produces final fidelity close to one and concurrence close to the target concurrence.
+
+### V1 Role
+
+V1 is deliberately idealized. It provides the clean reference case before adding:
+
+- decoherence,
+- finite-shot sampling,
+- measurement uncertainty,
+- calibration errors,
+- hardware-specific constraints,
+- resource accounting,
+- state-estimation uncertainty.
+
+This makes V1 useful as a frozen regression baseline for later extensions.
+
+---
+
+## V2 - Hardware-Aware Hybrid Control
+
+Notebook:
+
+```text
+sim_hybrid_opti_Bellstate_V2.ipynb
+```
+
+V2 extends the ideal Bell-state preparation problem into a finite-resource hybrid control problem.
+
+The simulator is designed as a technical scaffold for exploring how a classical controller can identify and compensate recoverable coherent hardware errors while respecting irreducible limits imposed by decoherence and finite measurement resources.
+
+### V2 Target Family
+
+The ideal two-parameter target family is
+
+```text
+|psi(alpha, phi)> = cos(alpha/2)|00> + exp(i phi) sin(alpha/2)|11>
+```
+
+For this family,
+
+```text
+C = |sin(alpha)|
+```
+
+where `C` is the concurrence.
+
+Concurrence determines the entanglement amplitude but is insensitive to the relative phase `phi`. V2 therefore distinguishes entanglement matching from full target-state preparation through target-state fidelity.
+
+### V2 Hardware-Control Model
+
+Systematic control offsets are represented as
+
+```text
+alpha_actual = alpha_command + delta_alpha
+phi_actual   = phi_command   + delta_phi
+```
+
+The controller therefore operates on commanded parameters while the simulated hardware applies biased parameters.
+
+### V2 Capabilities
+
+- density-matrix simulation of the two-qubit Bell-state circuit
+- Wootters concurrence for arbitrary two-qubit density matrices
+- pure-target fidelity evaluation
+- local CPTP noise channels:
+  - amplitude damping / relaxation
+  - pure dephasing
+  - depolarizing noise
+- explicit placement of noise at defined locations in the circuit
+- two-parameter control using `alpha` and `phi`
+- exact-state and finite-shot hybrid optimization
+- full two-qubit Pauli tomography using 15 nontrivial observables
+- model-aware X-state reconstruction using 7 observables:
+  - `ZI`
+  - `IZ`
+  - `ZZ`
+  - `XX`
+  - `YY`
+  - `XY`
+  - `YX`
+- systematic hardware calibration offsets
+- finite-shot measurement and state reconstruction
+- separation of recoverable coherent error from irreducible decoherence
+- explicit shot-resource accounting
+- interactive dashboard comparing:
+  - nominal hardware performance
+  - hybrid-controlled performance
+  - noisy-hardware ceiling
+  - ideal target
+
+---
+
+## V1 to V2 Progression
+
+| Capability | V1 | V2 |
+|---|---|---|
+| State representation | Pure state vector | Density matrix |
+| Control variables | Single circuit parameter | `alpha`, `phi` |
+| Relative phase control | No | Yes |
+| Noise model | None | CPTP channels |
+| Calibration offsets | None | Explicit control bias |
+| Measurement model | Exact state access | Finite-shot Pauli measurements |
+| State estimation | None | Tomographic reconstruction |
+| Optimization | Ideal target preparation | Hardware-aware hybrid feedback |
+| Concurrence | Exact diagnostic | Exact and estimated |
+| Fidelity | Exact diagnostic | Exact and estimated |
+| Physical performance ceiling | Not modeled | Explicitly computed |
+| Recoverable vs irreducible error | Not separated | Explicitly separated |
+| Measurement-resource accounting | No | Yes |
+| Reduced measurement model | N/A | 15 -> 7 observables |
+| Verification | Ideal analytic checks | Layered unit-test and regression stack |
+
+The progression is intentional:
+
+```text
+V1: ideal hybrid optimization
+    ->
+V2: noisy, finite-shot, hardware-aware hybrid control
+```
+
+---
+
+## V2 Validation Strategy
+
+V2 was developed cell-by-cell. Each computational layer was validated before the next layer was introduced.
+
+The frozen test stack verifies:
+
+1. density-matrix reproduction of the ideal pure-state circuit,
+2. trace preservation, Hermiticity, positivity, and purity,
+3. analytic concurrence limits for the implemented noise channels,
+4. location-dependent effects of noise in the circuit,
+5. phase-insensitivity of concurrence and phase-sensitivity of fidelity,
+6. exact and finite-shot state reconstruction,
+7. finite-shot hybrid optimization using estimated metrics only,
+8. recovery of coherent control errors without exceeding the noisy-hardware ceiling,
+9. exact X-state reconstruction from the reduced observable set,
+10. dashboard reproduction of the frozen benchmark.
+
+This creates a verification ladder:
+
+```text
+analytic physics
+    ->
+numerical primitive
+    ->
+composed circuit
+    ->
+measurement model
+    ->
+state estimator
+    ->
+classical controller
+    ->
+system benchmark
+```
+
+Each validated layer serves as a regression target for later development.
+
+---
+
+## Validated V2 Benchmark
+
+The frozen validation case uses:
+
+```text
+target concurrence      = 1.00
+target phase            = 0.00
+delta_alpha             = 0.25
+delta_phi               = 0.70
+post-CNOT dephasing q0  = 0.20
+post-CNOT dephasing q1  = 0.00
+shots per observable    = 2000
+```
+
+Validated results:
+
+| Quantity | Value |
+|---|---:|
+| Nominal fidelity | 0.796426 |
+| Hybrid-controlled fidelity | 0.898022 |
+| Noisy-hardware fidelity ceiling | 0.900000 |
+| Ideal fidelity | 1.000000 |
+| Nominal concurrence | 0.775130 |
+| Hybrid-controlled concurrence | 0.798093 |
+| Noisy-hardware concurrence ceiling | 0.800000 |
+| Recoverable fidelity | 0.103574 |
+| Fidelity recovered | 0.101596 |
+| Recovery fraction | 98.1% |
+| Controller gap | 0.001978 |
+| Irreducible fidelity gap | 0.100000 |
+
+The benchmark demonstrates the central V2 distinction:
+
+```text
+coherent calibration error
+    ->
+potentially recoverable by retuning
+
+decoherence
+    ->
+irreducible physical performance ceiling
+```
+
+For this case, the finite-shot controller restores 98.1% of the recoverable fidelity loss while remaining below the exact noisy-hardware ceiling.
+
+---
+
+## Measurement Compression in V2
+
+Full two-qubit Pauli tomography uses 15 nontrivial Pauli observables.
+
+For the current circuit and noise family, the reachable state remains in the two-qubit X-state family. This allows model-aware reconstruction using only:
+
+```text
+ZI, IZ, ZZ, XX, YY, XY, YX
+```
+
+The observable count is therefore reduced from:
+
+```text
+15 -> 7
+```
+
+For the frozen 659-evaluation benchmark:
+
+```text
+full-tomography shot count = 19,770,000
+reduced shot count         =  9,226,000
+```
+
+This corresponds to a 53.3% reduction under the current per-observable accounting.
+
+The reduced 7-observable reconstruction is model-specific. It is not a universal two-qubit tomography scheme.
+
+---
 
 ## Installation
 
-A clean conda environment is recommended.
+A clean Python environment is recommended.
+
+### Option 1 - Conda
 
 ```bash
 conda create -n hybrid-bell-optimizer python=3.11 -y
@@ -71,136 +352,252 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-A minimal `requirements.txt` is:
+### Option 2 - Python venv
 
-```text
-numpy
-scipy
-matplotlib
-jupyterlab
+Linux/macOS:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-If the notebook is later adapted to use Qiskit explicitly, add:
+Windows:
 
 ```text
-qiskit
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-## Running the Notebook
-
-Start JupyterLab:
+Launch JupyterLab:
 
 ```bash
 jupyter lab
 ```
 
-Then open the notebook and run all cells.
+---
 
-The notebook should execute end-to-end and produce:
+## Running V1
 
-1. a one-row, three-panel plot showing optimization behavior,
-2. a compact numerical verification table,
-3. printed target and optimized state vectors.
-
-## Model Description
-
-The workflow optimizes a parameterized state-preparation circuit against a Bell-state target.
-
-The cost function is:
+Open:
 
 ```text
-cost = 1 - fidelity
+sim_hybrid_opti_Bellstate_prep.ipynb
 ```
 
-where the fidelity measures overlap between the optimized final state and the target Bell state.
+Run the notebook from top to bottom.
 
-The optimizer minimizes this cost by adjusting the circuit parameter. A successful run should produce final fidelity close to one and concurrence close to the target concurrence.
+The notebook produces:
 
-## Interpretation
+- optimization trace,
+- parameter stabilization,
+- target-vs-optimized state comparison,
+- final fidelity,
+- target and final concurrence,
+- optimized circuit parameter,
+- function-evaluation and iteration information.
 
-This project is best understood as a minimal hybrid workflow demonstrator.
+V1 can be run independently of V2.
 
-It shows the structure of a quantum application prototype:
+---
+
+## Running V2
+
+Open:
 
 ```text
-quantum objective → classical optimization loop → numerical verification → performance summary
+sim_hybrid_opti_Bellstate_V2.ipynb
 ```
 
-In a larger setting, the same structure can be extended to include:
+Run the notebook from top to bottom.
 
-* noisy state preparation
-* finite-shot sampling
-* measurement uncertainty
-* hardware-specific constraints
-* calibration-sensitive parameters
-* runtime and sampling-cost estimates
-* hardware-aware performance modeling
+Each validation cell should report:
 
-The current version is deliberately idealized. It provides the clean baseline before adding noise and device constraints.
+```text
+PASS
+```
 
-## Relevance
+before proceeding to the next layer.
 
-This repository demonstrates several skills relevant to quantum applications and performance modeling:
+The final dashboard exposes the full V2 engineering workflow:
 
-* building compact quantum simulation workflows
-* defining explicit target states and objective functions
-* connecting algorithmic parameters to measurable outcomes
-* tracking convergence and optimization behavior
-* validating results with fidelity and entanglement metrics
-* producing readable, reproducible scientific code
+```text
+target specification
+    ->
+hardware imperfections
+    ->
+finite-shot measurements
+    ->
+state reconstruction
+    ->
+classical control
+    ->
+retuned hardware
+    ->
+comparison with physical ceiling
+```
 
-The example uses Bell-state preparation because it is simple enough to inspect directly while still involving genuine two-qubit entanglement.
+Two search modes are available in the dashboard:
 
-## Current Limitations
+- **Fast demo** for rapid interactive use
+- **Validated benchmark** for reproduction of the frozen regression case
 
-The current version does not yet include:
+---
 
-* finite-shot sampling
-* gate noise
-* decoherence
-* readout error
-* hardware-native gate constraints
-* pulse-level modeling
-* time-to-solution estimates
+## Scope and Limitations
 
-These are natural extensions. The present notebook establishes the transparent baseline needed before adding those effects.
+### V1
+
+V1 intentionally excludes:
+
+- finite-shot sampling,
+- gate noise,
+- decoherence,
+- readout error,
+- hardware-native gate constraints,
+- pulse-level modeling,
+- time-to-solution estimates.
+
+Its purpose is to preserve a minimal and transparent ideal reference.
+
+### V2
+
+V2 is intentionally small and auditable.
+
+Current limitations include:
+
+- two-qubit Bell-like state family,
+- coarse-to-fine derivative-free controller,
+- simplified local noise channels,
+- no explicit readout-error model,
+- no leakage channel,
+- no pulse-level dynamics,
+- no direct hardware execution,
+- no online drift model,
+- no adaptive shot allocation.
+
+The present amplitude-damping channel models qubit relaxation.
+
+For photonic dual-rail hardware, photon loss should instead be represented explicitly as leakage or erasure outside the logical qubit subspace rather than identified directly with abstract-qubit amplitude damping.
+
+---
+
+## Development Philosophy
+
+The repository follows a simple development rule:
+
+```text
+small model
+    ->
+analytic or known validation target
+    ->
+unit test
+    ->
+freeze validated layer
+    ->
+add one new capability
+```
+
+This makes the numerical development auditable and helps localize failures when later layers are modified.
+
+The same strategy is intended for future architectures and larger models.
+
+---
 
 ## Planned Extensions
 
-Possible next steps include:
+The current V2 architecture is designed so that individual layers can be replaced independently.
 
-1. add finite-shot sampling,
-2. add depolarizing or amplitude-damping noise,
-3. compare ideal and noisy optimization traces,
-4. include readout uncertainty,
-5. estimate sampling cost for target fidelity thresholds,
-6. adapt the workflow to hardware-native gate sets,
-7. compare optimizer behavior under different noise assumptions.
+Near-term directions include:
 
-## Portfolio Context
+- prior characterization loaded from a resource file,
+- uncertainty-aware warm-start control,
+- robust optimization under incomplete state or hardware information,
+- adaptive measurement selection,
+- adaptive shot allocation,
+- hardware-specific noise and calibration models,
+- explicit leakage / erasure channels,
+- online drift estimation,
+- SPSA, CMA-ES, Bayesian optimization, or reinforcement-learning controllers,
+- larger parameterized circuits,
+- direct hardware or cloud-backend execution,
+- error mitigation and error-correction layers.
 
-This project was developed as a compact portfolio artifact demonstrating rapid construction of an inspectable hybrid classical-quantum workflow.
+A longer-term direction is a reusable multi-architecture framework in which the same hybrid control problem can be evaluated with architecture-specific backends such as:
 
-It complements other quantum workflow examples, including Bell-state measurement, entanglement swapping, quantum networking, and hardware-aware photonic simulation.
+```text
+DV quantum backend
+classical photonic backend
+quantum photonic backend
+```
 
-The broader theme is transparent quantum performance modeling: start from a physical or algorithmic target, define the minimal useful model, expose assumptions, compute quantitative metrics, and communicate the result clearly.
+The goal is to keep control, estimation, orchestration, logging, and validation reusable while isolating architecture-specific physics behind validated backend interfaces.
+
+---
+
+## Technical Briefs
+
+Two technical briefs accompany the notebooks:
+
+```text
+sim_hybrid_opti_Bellstate_prep_brief.pdf
+hybrid_quantum_classical_control_technical_brief.pdf
+```
+
+The V1 brief documents the ideal hybrid state-preparation workflow.
+
+The V2 brief documents:
+
+- density-matrix formulation,
+- CPTP noise channels,
+- finite-shot measurement,
+- state reconstruction,
+- hybrid recovery,
+- physical performance ceilings,
+- measurement compression,
+- verified benchmark results,
+- limitations and extension pathways.
+
+---
+
+## Relevance
+
+The repository demonstrates a progression from a compact ideal quantum workflow to a hardware-aware hybrid control problem.
+
+The main technical themes are:
+
+- explicit target-state definition,
+- hybrid classical-quantum optimization,
+- density-matrix simulation,
+- quantum-noise modeling,
+- finite-shot measurement,
+- state estimation,
+- recoverability analysis,
+- resource-aware control,
+- unit-test-driven scientific development,
+- reusable architecture design.
+
+The Bell-state problem is deliberately small enough that the underlying physics remains inspectable while still supporting meaningful entanglement, noise, measurement, and feedback-control behavior.
+
+---
 
 ## License
 
-This repository uses the MIT License, selected from GitHub standard license templates. See the LICENSE file in this repository for the full license text.
+This project is released under the MIT License.
 
-## Acknowledgements
+See:
 
-This material was developed and/or adapted with support from the National
-Science Foundation through the QCAP-NQVL-Pilot and QCAP-NQVL-Design efforts
-under NSF Award Nos. OSI-2410813 and OSI-2531569.
-Any opinions, findings, conclusions, or recommendations expressed in this
-material are those of the author(s) and do not necessarily reflect the views
-of the National Science Foundation.
+```text
+LICENSE
+```
+
+for the full license text.
+
+---
 
 ## Author
 
 **Dr. Boris Kiefer**  
 New Mexico State University  
 GitHub: [boriskiefer](https://github.com/boriskiefer)
-
